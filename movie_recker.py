@@ -9,31 +9,52 @@ How it works / Logic flow
 3b.Bot gets recommendations from movie api
 4. Bot replies to the user with top 2/3 recommendations
 """
+import tweepy
 
-def main(user_name="@rtindru"):
+auth = tweepy.OAuthHandler('wnHnUjjJVfGKIkjgAlAWIX7Ii', 'hLcXusk6opqfFJETXJAF4dzMx5x8Pr4v0TH22cGwY5SMRHPJhU')
+auth.set_access_token('54509995-ZTtceIZD0esJ57apOshkRK5O8tKCeGCa82x7p7osF', 'Pnbrj0tapaPHBeGGShASEccBtrPIibEyVa1TgYnZW4MOq')
+
+api = tweepy.API(auth)
+
+
+class RecommendStreamListener(tweepy.StreamListener):
+
+    def on_status(self, status):
+        print("RecommendStreamListener", status.text)
+        text = "@{} What's your favorite movie?".format(status.user.screen_name)
+        reply = api.update_status(text, in_reply_to_status_id=status.id)
+        print("Reply ID", reply.id)
+
+
+class ResponseStreamListener(tweepy.StreamListener):
+
+    def on_status(self, status):
+        print("ResponseStreamListener", status.text)
+
+
+def main():
     """
     Goal: Searches twitter for the user name "rtindru"
-    Input: user_name to search tweets for
+    Input: str, user_name to search tweets for
     Output: All tweets with the username
     """
-    pass
+    respStreamListener = ResponseStreamListener()
+    respStream = tweepy.Stream(auth = api.auth, listener=respStreamListener, is_async=True)
+    respStream.filter(follow=["54509995"])
 
-def keyword_search(user_tweet, search_keywords):
-    """
-    Goal: Does this tweet have the keywords "Recommend" and "Movie"
-    Input1: user_tweet to return tweets 
-    Input2: search_keywords to return specific keywords  
-    Output: True/False
-    """
-    pass
+    recStreamListener = RecommendStreamListener()
+    recStream = tweepy.Stream(auth = api.auth, listener=recStreamListener)
+    recStream.filter(track=["goosfraba recommendation movie", "@rtindru recommend movie"], is_async=True)
+
 
 def get_movie_name():
     pass
 
-def bot_recc():
+
+def bot_recc(movie_name):
     """
     Goal: Get recommends from API      
-    Input: movie_name provides movie name
+    Input: str, movie_name provides movie name
     Output: Top 3 best movies
 
     """
@@ -42,3 +63,7 @@ def bot_recc():
 
 def reply_recc():
     pass
+
+
+if __name__ == "__main__":
+    main()
